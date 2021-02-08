@@ -1,0 +1,62 @@
+#!/bin/sh
+#
+# Emulates Dmenu behavior using default terminal
+# Note: Use your window manager to make the class "scratchpad" floating
+#
+# Dependencies: fzf
+
+#---------------------------------------
+#               Config
+#---------------------------------------
+
+WIDTH=40
+HEIGHT=10
+OFFSET_X=450
+OFFSET_Y=200
+
+#---------------------------------------
+#               Script
+#---------------------------------------
+
+ARGS=/tmp/TMENU_ARGS
+OUTPUT=/tmp/TMENU_OUTPUT
+PROMPT=
+
+case $1 in
+   -r)
+      PROGRAM=$(find /usr/bin | awk -F / '{print $NF}' | $0) &&
+         $PROGRAM &
+      exit
+      ;;
+   -p)
+      PROMPT="--header $2"
+      ;;
+esac
+
+scan() {
+   : > $ARGS
+   while IFS= read -r line; do
+      echo "$line"
+   done > $ARGS
+   [ -n "$line" ] && echo "$line" > $ARGS
+   # cat > $ARGS
+}
+
+prompt() {
+   $TERMINAL -c scratchpad -g "$WIDTH"x$HEIGHT+$OFFSET_X+$OFFSET_Y \
+      "$SHELL" -c "fzf $PROMPT < $ARGS > $OUTPUT" || exit 1
+}
+
+print() {
+   while IFS= read -r line; do
+      echo "$line"
+   done < $OUTPUT
+   # cat $OUTPUT
+}
+
+main() {
+   scan
+   prompt
+   print
+}
+main
