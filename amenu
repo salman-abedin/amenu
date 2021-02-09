@@ -1,0 +1,91 @@
+#!/bin/sh
+#
+# Fuzzy Finder Dynamic GUI Menu
+#
+# Dependencies: fzf
+
+#---------------------------------------
+#               Config
+#---------------------------------------
+
+WIDTH=40
+HEIGHT=10
+OFFSET_X=450
+OFFSET_Y=200
+
+#---------------------------------------
+#               Script
+#---------------------------------------
+
+ARGS=/tmp/AMENU_ARGS
+OUTPUT=/tmp/AMENU_OUTPUT
+PROMPT=
+FLAG=
+
+scan_args() {
+   while IFS= read -r line; do
+      echo "$line"
+   done
+   [ -n "$line" ] && echo "$line"
+}
+
+print() {
+   while IFS= read -r line; do
+      echo "$line"
+   done < $OUTPUT
+}
+
+run_menu() {
+   scan_args > $ARGS
+   prompt
+   print
+}
+
+run_app() {
+   read -r PROGRAM < $OUTPUT
+   $PROGRAM > /dev/null 2>&1 &
+}
+
+prompt() {
+   $TERMINAL "$FLAG" scratchpad -g "$WIDTH"x$HEIGHT+$OFFSET_X+$OFFSET_Y \
+      "$SHELL" -c "fzf $PROMPT < $ARGS > $OUTPUT" 2> /dev/null
+}
+
+scan_apps() {
+   for program in /usr/bin/* /usr/local/bin/*; do
+      echo "${program##*/}"
+   done > $ARGS
+}
+
+run_launcher() {
+   scan_apps
+   prompt
+   run_app
+}
+
+get_class_flag() {
+   if pidof st > /dev/null; then
+      FLAG=-c
+   elif pidof xterm > /dev/null; then
+      FLAG=-class
+   elif pidof termite > /dev/null; then
+      FLAG=--class
+   fi
+}
+
+main() {
+   get_class_flag
+   case $1 in
+      -l)
+         run_launcher
+         ;;
+      -p)
+         PROMPT="--header $2"
+         run_menu
+         ;;
+      *)
+         run_menu
+         ;;
+   esac
+}
+main "$@"
