@@ -2,7 +2,8 @@
 
 # Dependencies
 
--  fzf
+-  [fzf](https://github.com/junegunn/fzf)
+-  find & awk
 
 ## Installation
 
@@ -15,6 +16,10 @@ git clone https://github.com/salman-abedin/amenu.git && cd amenu && sudo make in
 ```sh
 sudo make uninstall
 ```
+
+## Supported Terminal Emulators
+
+- st
 
 ## Documentation
 
