@@ -2,14 +2,10 @@
 BIN_DIR = /usr/local/bin
 install:
 	@mkdir -p $(BIN_DIR)
-	@for script in src/*; do \
-		cp -f $$script $(BIN_DIR); \
-		chmod 755 $(BIN_DIR)/$${script#src/}; \
-		done
+	@chmod 755 amenu
+	@cp -f amenu $(BIN_DIR)
 	@echo Done installing the executable files.
 uninstall:
-	@for script in src/*;do \
-		rm -f $(BIN_DIR)/$${script#src/}; \
-		done
+	@rm -f $(BIN_DIR)/amenu
 	@echo Done removing executable files.
 .PHONY: install uninstall
