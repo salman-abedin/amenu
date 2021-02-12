@@ -2,7 +2,7 @@
 #
 # Fuzzy Finder Dynamic GUI Menu
 #
-# Dependencies: fzf
+# Dependencies: fzf & tail
 
 #---------------------------------------
 #               Config
@@ -43,23 +43,33 @@ scan_args() {
    [ -n "$line" ] && echo "$line"
 }
 show() { while IFS= read -r line; do echo "$line"; done < $OUTPUT; }
-run_menu() { scan_args > $ARGS; prompt && show; }
+run_menu() {
+   scan_args > $ARGS
+   prompt
+   show
+}
 run_app() { read -r PROGRAM < $OUTPUT && $PROGRAM > /dev/null 2>&1 & }
 prompt() {
    GEOMETRY=$WIDTH"x"$HEIGHT+$OFFSET_X+$OFFSET_Y
+
+   : > $OUTPUT
    $TERMINAL \
       $FLAG_CLASS amenu \
       $FLAG_GEOMETRY $GEOMETRY \
-      -e "$SHELL" -c "fzf $PROMPT < $ARGS > $OUTPUT" 2>/dev/null
-      cat $OUTPUT > /dev/null || exit 1
-      # -e "$SHELL" -c "fzf $PROMPT < $ARGS > $OUTPUT" 2> /dev/null || exit 1
+      -e "$SHELL" -c "fzf $PROMPT < $ARGS | tail -1 > $OUTPUT" 2> /dev/null
+   read -r CHOICE < $OUTPUT
+   [ -z "$CHOICE" ] && exit 1
 }
 scan_apps() {
    for program in /usr/bin/* /usr/local/bin/*; do
       echo "${program##*/}"
    done > $ARGS
 }
-run_launcher() { scan_apps && prompt && run_app; }
+run_launcher() {
+   scan_apps
+   prompt
+   run_app
+}
 main() {
    case $1 in
       -l) run_launcher ;;

@@ -21,6 +21,7 @@ to deal with. 😅
 # Dependencies
 
 -  [fzf](https://github.com/junegunn/fzf)
+-  tail
 
 ## Installation
 
