@@ -1,11 +1,20 @@
 .POSIX:
-BIN_DIR = /usr/local/bin
+DIR_BIN = /usr/local/bin
+SCRIPT = $(shell grep -lr "^#\!" ./* | sed 's/.\///')
+CONFIG = $(shell find $$PWD -type f -name "*rc")
+init:
+	@[ $(CONFIG) ] && { \
+		[ -f ~/.config/$(CONFIG) ] || cp $(CONFIG) ~/.config; \
+	} || exit 0
+	@echo Initiation finished.
 install:
-	@mkdir -p $(BIN_DIR)
-	@chmod 755 amenu
-	@cp -f amenu $(BIN_DIR)
-	@echo Done installing the executable files.
+	@mkdir -p $(DIR_BIN)
+	@for script in $(SCRIPT); do \
+		cp -f $$script $(DIR_BIN); \
+		chmod 755 $(DIR_BIN)/$${script##*/}; \
+		done
+	@echo Installation finished.
 uninstall:
-	@rm -f $(BIN_DIR)/amenu
-	@echo Done removing executable files.
-.PHONY: install uninstall
+	@for script in $(SCRIPT); do rm -f $(DIR_BIN)/$${script##*/}; done
+	@echo Uninstallation finished.
+.PHONY: init install uninstall

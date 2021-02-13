@@ -8,12 +8,9 @@
 #               Config
 #---------------------------------------
 
-FLAG_CLASS=-c #st
-# FLAG_CLASS=-class  #xterm
-# FLAG_CLASS=--class #termite
-
-FLAG_GEOMETRY=-g #st
-# FLAG_GEOMETRY=-geometry #xterm
+TERMINAL=st
+# TERMINAL=termux
+# TERMINAL=xterm
 
 WIDTH=40
 HEIGHT=10
@@ -35,42 +32,53 @@ export FZF_DEFAULT_OPTS="\
 #               Script
 #---------------------------------------
 
-ARGS=/tmp/AMENU_ARGS
-OUTPUT=/tmp/AMENU_OUTPUT
+FILE_ARGS=/tmp/AMENU_FILE_ARGS
+FILE_CHOICES=/tmp/AMENU_FILE_CHOICES
 
 scan_args() {
    while IFS= read -r line; do echo "$line"; done
    [ -n "$line" ] && echo "$line"
 }
-show() { while IFS= read -r line; do echo "$line"; done < $OUTPUT; }
+show() { while IFS= read -r line; do echo "$line"; done < $FILE_CHOICES; }
 run_menu() {
-   scan_args > $ARGS
+   scan_args > $FILE_ARGS
    prompt
    show
 }
-run_app() { read -r PROGRAM < $OUTPUT && $PROGRAM > /dev/null 2>&1 & }
+run_app() {
+   while IFS= read -r program; do
+      $program > /dev/null 2>&1 &
+   done < $FILE_CHOICES
+}
 prompt() {
    GEOMETRY=$WIDTH"x"$HEIGHT+$OFFSET_X+$OFFSET_Y
 
-   : > $OUTPUT
+   : > $FILE_CHOICES
    $TERMINAL \
       $FLAG_CLASS amenu \
       $FLAG_GEOMETRY $GEOMETRY \
-      -e "$SHELL" -c "fzf $PROMPT < $ARGS | tail -1 > $OUTPUT" 2> /dev/null
-   read -r CHOICE < $OUTPUT
-   [ -z "$CHOICE" ] && exit 1
+      -e "$SHELL" -c "fzf $PROMPT < $FILE_ARGS | tail -1 > $FILE_CHOICES" 2> /dev/null
+   [ -s "$FILE_CHOICES" ] || exit 1
 }
 scan_apps() {
    for program in /usr/bin/* /usr/local/bin/*; do
       echo "${program##*/}"
-   done > $ARGS
+   done > $FILE_ARGS
 }
 run_launcher() {
    scan_apps
    prompt
    run_app
 }
+init() {
+   case $TERMINAL in
+      st) FLAG_CLASS=-c && FLAG_GEOMETRY=-g ;;
+      xterm) FLAG_CLASS=-class && FLAG_GEOMETRY=-geometry ;;
+      termite) FLAG_CLASS=--class ;;
+   esac
+}
 main() {
+   init
    case $1 in
       -l) run_launcher ;;
       -p) PROMPT="--header $2" && run_menu ;;
