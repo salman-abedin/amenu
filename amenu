@@ -8,10 +8,6 @@
 #                              Config
 #===============================================================================
 
-TERMINAL=st
-# TERMINAL=termux
-# TERMINAL=xterm
-
 WIDTH=40
 HEIGHT=10
 OFFSET_X=450
@@ -39,53 +35,73 @@ FLAG_CLASS=
 FLAG_GEOMETRY=
 
 scan_args() {
-   while IFS= read -r line; do echo "$line"; done
-   [ -n "$line" ] && echo "$line"
+  while IFS= read -r line; do echo "$line"; done
+  [ -n "$line" ] && echo "$line"
 }
 show() { while IFS= read -r line; do echo "$line"; done < $FILE_CHOICES; }
 run_menu() {
-   scan_args > $FILE_ARGS
-   prompt
-   show
+  scan_args > $FILE_ARGS
+  prompt
+  show
 }
 run_app() {
-   while IFS= read -r program; do
-      $program > /dev/null 2>&1 &
-   done < $FILE_CHOICES
+  while IFS= read -r program; do
+    $program > /dev/null 2>&1 &
+  done < $FILE_CHOICES
 }
 prompt() {
-   GEOMETRY=$WIDTH"x"$HEIGHT+$OFFSET_X+$OFFSET_Y
+  GEOMETRY=$WIDTH"x"$HEIGHT+$OFFSET_X+$OFFSET_Y
 
-   : > $FILE_CHOICES
-   $TERMINAL \
-      $FLAG_CLASS amenu \
-      $FLAG_GEOMETRY $GEOMETRY \
-      -e "$SHELL" -c "fzf $PROMPT < $FILE_ARGS | tail -1 > $FILE_CHOICES" 2> /dev/null
-   [ -s "$FILE_CHOICES" ] || exit 1
+  : > $FILE_CHOICES
+  $EMULATOR \
+    $FLAG_CLASS amenu \
+    $FLAG_GEOMETRY $GEOMETRY \
+    -e "$SHELL" -c "fzf $PROMPT $QUERY < $FILE_ARGS | tail -1 > $FILE_CHOICES" 2> /dev/null
+  [ -s "$FILE_CHOICES" ] || exit 1
 }
 scan_apps() {
-   for program in /usr/bin/* /usr/local/bin/*; do
-      echo "${program##*/}"
-   done > $FILE_ARGS
+  for program in /usr/bin/* /usr/local/bin/*; do
+    echo "${program##*/}"
+  done > $FILE_ARGS
 }
 run_launcher() {
-   scan_apps
-   prompt
-   run_app
+  scan_apps
+  prompt
+  run_app
 }
 init() {
-   case $TERMINAL in
-      st) FLAG_CLASS=-c && FLAG_GEOMETRY=-g ;;
-      xterm) FLAG_CLASS=-class && FLAG_GEOMETRY=-geometry ;;
-      termite) FLAG_CLASS=--class ;;
-   esac
+  case $TERM in
+    st-256color | tmux-256color)
+      EMULATOR=st
+      FLAG_CLASS=-c
+      FLAG_GEOMETRY=-g
+      ;;
+    xterm)
+      EMULATOR=xterm
+      FLAG_CLASS=-class
+      FLAG_GEOMETRY=-geometry
+      ;;
+    termite)
+      EMULATOR=termite
+      FLAG_CLASS=--class
+      ;;
+  esac
 }
 main() {
-   init
-   case $1 in
-      -l) run_launcher ;;
-      -p) PROMPT="--header \"$2\"" && run_menu ;;
-      *) run_menu ;;
-   esac
+  init
+  while :; do
+    case $1 in
+      -l) RUN_LAUNCHER="true" ;;
+      -p) shift && PROMPT="--header \"$1\"" ;;
+      -q) shift && QUERY="-q \"$1\"" ;;
+      *) break ;;
+    esac
+    shift
+  done
+  if [ -n "$RUN_LAUNCHER" ]; then
+    run_launcher
+  else
+    run_menu
+  fi
 }
 main "$@"

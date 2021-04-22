@@ -14,14 +14,14 @@ to deal with. 😅
 
 ## Supported Terminal Emulators
 
--  st
--  xterm
--  termite
+- st
+- xterm
+- termite
 
 ## Dependencies
 
--  [fzf](https://github.com/junegunn/fzf)
--  tail
+- [fzf](https://github.com/junegunn/fzf)
+- tail
 
 ## Installation
 
@@ -31,14 +31,14 @@ git clone https://github.com/salman-abedin/amenu.git && cd amenu && sudo make in
 
 ## Usage
 
--  Use your window manager to make the **amenu** class floating.
--  Modify the **config** section of the script according to your preferred terminal emulator.
+- Use your window manager to make the **amenu** class floating.
+- Consult the **config** section of the script for available modifications.
 
 ```sh
 # Launches menu picker with standard in using an optional prompt
-CMD | amenu [-p PROMPT]
+CMD | amenu [-p PROMPT] [-q QUERY]
 #or
-amenu [-p PROMPT ] < CMD/FILE
+amenu [-p PROMPT ] [-q QUERY] < CMD/FILE
 
  # Launches application launcher
 amenu -l
