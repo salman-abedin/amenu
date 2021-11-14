@@ -14,6 +14,7 @@ to deal with. 😅
 
 ## Supported Terminal Emulators
 
+- alacritty
 - st
 - xterm
 - termite
