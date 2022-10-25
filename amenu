@@ -93,7 +93,7 @@ init() {
     alacritty)
       FLAG_CLASS=--class
       FLAG_GEOMETRY=
-      GEOMETRY="-o window.padding.x=15 -o window.padding.y=15 -o window.dimensions.columns=200"
+      GEOMETRY="-o window.padding.x=15 -o window.padding.y=15 -o window.dimensions.columns=0"
       ;;
   esac
 }
