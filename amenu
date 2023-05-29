@@ -65,8 +65,19 @@ prompt() {
 }
 
 scan_apps() {
-  for program in /usr/bin/* /usr/local/bin/*; do
-    echo "${program##*/}"
+  paths="${PATH}"
+
+  while [ -n "${paths}" ]; do
+    p="${paths%%":"*}"
+    #
+    # Do the string deletion separately since in the last path there will be no ':' suffix.
+    #
+    paths="${paths#"${p}"}"
+    paths="${paths#":"}"
+
+    for program in "${p}/"*; do
+      echo "${program##*/}"
+    done
   done > $FILE_ARGS
 }
 
